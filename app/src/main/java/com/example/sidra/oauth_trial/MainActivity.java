@@ -1,8 +1,11 @@
 package com.example.sidra.oauth_trial;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -10,6 +13,7 @@ import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -30,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
     private GoogleApiClient mGoogleApiClient;
+    private static final String CLIENT_ID = "";
+    private static final String WEB_CLIENT_ID="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +49,8 @@ public class MainActivity extends AppCompatActivity implements
         ///////////scope comes here
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestId()
-                //.requestIdToken("312796068697-ohbm1slu2klggl419u6q0p729dd9rlc8.apps.googleusercontent.com") //I get name, email,etc and dont need to add anything else
+                .requestServerAuthCode(WEB_CLIENT_ID)
+                .requestIdToken(WEB_CLIENT_ID) //It gets name, email,etc and dont need to add anything else
                 .build();
 
         // [START customize_button]
@@ -64,6 +71,13 @@ public class MainActivity extends AppCompatActivity implements
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
+       /* mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Plus.API)
+                .addScope(Plus.SCOPE_PLUS_LOGIN)
+                .build();*/
     }
 
     @Override
@@ -116,7 +130,13 @@ public class MainActivity extends AppCompatActivity implements
             GoogleSignInAccount acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             System.out.println(acct.getDisplayName());
-            //System.out.println(acct.getIdToken());
+            String idToken = result.getSignInAccount().getIdToken();
+            String authCode = result.getSignInAccount().getServerAuthCode();
+            //var id_token = acct.getAuthResponse().id_token;
+            System.out.println(idToken);
+            //eyJhbGciOiJSUzI1NiIsImtpZCI6IjViN2E3NWJkMDM2NjM5ZjQ2ZmJhY2E5ZjQxMDhkZDEwZDNlNzJiNDcifQ.eyJpc3MiOiJodHRwczovL2FjY2
+            System.out.println(authCode);
+
 
             updateUI(true);
         } else {
