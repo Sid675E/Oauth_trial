@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
+import com.example.sidra.oauth_trial.retrofit.ApiClient;
+import com.example.sidra.oauth_trial.retrofit.ApiInterface;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -25,6 +27,10 @@ import com.google.android.gms.common.api.ResultCallback;
 
 import java.io.IOException;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static com.google.android.gms.auth.GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE;
 
 public class MainActivity extends AppCompatActivity implements
@@ -35,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int RC_SIGN_IN = 9001;
     private GoogleApiClient mGoogleApiClient;
     private static final String CLIENT_ID = "";
-    private static final String WEB_CLIENT_ID="";
+    private static final String WEB_CLIENT_ID="312796068697-2vgqnsd95ukghbhj7uvael4oq48gt515.apps.googleusercontent.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,13 +136,35 @@ public class MainActivity extends AppCompatActivity implements
             GoogleSignInAccount acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             System.out.println(acct.getDisplayName());
-            String idToken = result.getSignInAccount().getIdToken();
-            String authCode = result.getSignInAccount().getServerAuthCode();
+            //String idToken = result.getSignInAccount().getIdToken();
+            String authCode = acct.getServerAuthCode();
             //var id_token = acct.getAuthResponse().id_token;
-            System.out.println(idToken);
+            //System.out.println(idToken);
             //eyJhbGciOiJSUzI1NiIsImtpZCI6IjViN2E3NWJkMDM2NjM5ZjQ2ZmJhY2E5ZjQxMDhkZDEwZDNlNzJiNDcifQ.eyJpc3MiOiJodHRwczovL2FjY2
             System.out.println(authCode);
 
+            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+            Call<Void> call1 = apiService.createTask(authCode);
+            call1.enqueue(new Callback<Void>() {
+                              @Override
+                              public void onResponse(Call<Void> call1, Response<Void> respo) {
+                                  int statuscode = respo.code();
+
+                                  Log.d("Message", "code..." + respo.code() + " message..." + respo.message());
+
+                                  Void respon = respo.body();
+
+                                  if (respon == null) {
+                                      Log.e("Error", "" + statuscode + "......" + respo.message() + "....null body");
+                                  }
+
+                              }
+                @Override
+                public void onFailure(Call<Void> call1, Throwable t) {
+
+                    Log.e(TAG, t.toString());
+                }
+            });
 
             updateUI(true);
         } else {
