@@ -2,6 +2,7 @@ package com.example.sidra.oauth_trial;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
@@ -49,12 +51,14 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.sign_in_button).setOnClickListener(this);
+        findViewById(R.id.sign_out_button).setOnClickListener(this);
+        findViewById(R.id.disconnect_button).setOnClickListener(this);
 
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         ///////////scope comes here
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestId()
+                .requestEmail()
                 .requestServerAuthCode(WEB_CLIENT_ID)
                 .requestIdToken(WEB_CLIENT_ID) //It gets name, email,etc and dont need to add anything else
                 .build();
@@ -135,16 +139,19 @@ public class MainActivity extends AppCompatActivity implements
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
-            System.out.println(acct.getDisplayName());
+            String displayName = acct.getDisplayName();
+            System.out.println(displayName);
             //String idToken = result.getSignInAccount().getIdToken();
             String authCode = acct.getServerAuthCode();
             //var id_token = acct.getAuthResponse().id_token;
             //System.out.println(idToken);
             //eyJhbGciOiJSUzI1NiIsImtpZCI6IjViN2E3NWJkMDM2NjM5ZjQ2ZmJhY2E5ZjQxMDhkZDEwZDNlNzJiNDcifQ.eyJpc3MiOiJodHRwczovL2FjY2
             System.out.println(authCode);
+            String email_Id = acct.getEmail();
+            System.out.println(email_Id);
 
             ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-            Call<Void> call1 = apiService.createTask(authCode);
+            Call<Void> call1 = apiService.createUsers(displayName,email_Id);
             call1.enqueue(new Callback<Void>() {
                               @Override
                               public void onResponse(Call<Void> call1, Response<Void> respo) {
@@ -157,7 +164,9 @@ public class MainActivity extends AppCompatActivity implements
                                   if (respon == null) {
                                       Log.e("Error", "" + statuscode + "......" + respo.message() + "....null body");
                                   }
-
+                                  else{
+                                       getToken();
+                                  }
                               }
                 @Override
                 public void onFailure(Call<Void> call1, Throwable t) {
@@ -183,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements
     // [END signIn]
 
     // [START signOut]
-    private void signOut() {
-        /*Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+    private void signOut(View v) {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -192,13 +201,13 @@ public class MainActivity extends AppCompatActivity implements
                         updateUI(false);
                         // [END_EXCLUDE]
                     }
-                });*/
+                });
     }
     // [END signOut]
 
     // [START revokeAccess]
-    private void revokeAccess() {
-        /*Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+    private void revokeAccess(View v) {
+        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -206,36 +215,84 @@ public class MainActivity extends AppCompatActivity implements
                         updateUI(false);
                         // [END_EXCLUDE]
                     }
-                });*/
+                });
     }
     // [END revokeAccess]
+
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-        //Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
     private void showProgressDialog() {
+        /*if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(getString(R.string.loading));
+            mProgressDialog.setIndeterminate(true);
+        }
 
+        mProgressDialog.show();*/
     }
 
     private void hideProgressDialog() {
-
+        /*if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.hide();
+        }*/
     }
 
     private void updateUI(boolean signedIn) {
         if (signedIn) {
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            //findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-        }
+            findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.disconnect_button).setVisibility(View.VISIBLE);
+        } else {
+            //mStatusTextView.setText(R.string.signed_out);
 
+            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+            findViewById(R.id.disconnect_button).setVisibility(View.GONE);
+        }
     }
 
     @Override
     public void onClick(View v) {
         signIn();
+        switch (v.getId()) {
+            case R.id.sign_in_button:
+                signIn();
+                break;
+            case R.id.sign_out_button:
+                signOut(v);
+                break;
+            case R.id.disconnect_button:
+                revokeAccess(v);
+                break;
+        }
+    }
+
+    public void getToken(){
+        /*LoginService loginService =
+                ApiClient.createService(LoginService.class, "user", "secretpassword");
+        Call<Void> call = loginService.basicLogin();
+        call.enqueue(new Callback<User >() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // user object available
+                } else {
+                    // error response, no access to resource?
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // something went completely south (like no internet connection)
+                Log.d("Error", t.getMessage());
+            }
+        }*/
     }
 }
 
