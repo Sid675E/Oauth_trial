@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.sidra.oauth_trial.retrofit.ApiClient;
 import com.example.sidra.oauth_trial.retrofit.ApiInterface;
@@ -29,6 +30,7 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
-            String displayName = acct.getDisplayName();
+            final String displayName = acct.getDisplayName();
             System.out.println(displayName);
             //String idToken = result.getSignInAccount().getIdToken();
             String authCode = acct.getServerAuthCode();
@@ -147,10 +149,10 @@ public class MainActivity extends AppCompatActivity implements
             //System.out.println(idToken);
             //eyJhbGciOiJSUzI1NiIsImtpZCI6IjViN2E3NWJkMDM2NjM5ZjQ2ZmJhY2E5ZjQxMDhkZDEwZDNlNzJiNDcifQ.eyJpc3MiOiJodHRwczovL2FjY2
             System.out.println(authCode);
-            String email_Id = acct.getEmail();
+            final String email_Id = acct.getEmail();
             System.out.println(email_Id);
 
-            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+            ApiInterface apiService = ApiClient.createService(ApiInterface.class);
             Call<Void> call1 = apiService.createUsers(displayName,email_Id);
             call1.enqueue(new Callback<Void>() {
                               @Override
@@ -158,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements
                                   int statuscode = respo.code();
 
                                   Log.d("Message", "code..." + respo.code() + " message..." + respo.message());
+                                  System.out.println("Calling getToken");
+                                  getToken(email_Id,displayName);
 
                                   Void respon = respo.body();
 
@@ -165,7 +169,8 @@ public class MainActivity extends AppCompatActivity implements
                                       Log.e("Error", "" + statuscode + "......" + respo.message() + "....null body");
                                   }
                                   else{
-                                       getToken();
+                                      //System.out.println("Calling getToken");
+                                       //getToken();
                                   }
                               }
                 @Override
@@ -273,26 +278,35 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void getToken(){
-        /*LoginService loginService =
-                ApiClient.createService(LoginService.class, "user", "secretpassword");
-        Call<Void> call = loginService.basicLogin();
-        call.enqueue(new Callback<User >() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    // user object available
-                } else {
-                    // error response, no access to resource?
-                }
-            }
+    public void getToken(String email_Id, String displayName){
+        ApiInterface apiService1 = ApiClient.createService(ApiInterface.class,email_Id,displayName);
+        Call<ResponseBody> call1 = apiService1.getToken();
+        call1.enqueue(new Callback<ResponseBody>() {
+        @Override
+        public void onResponse(Call<ResponseBody> call1,Response<ResponseBody> response){
+            int statuscode = response.code();
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                // something went completely south (like no internet connection)
-                Log.d("Error", t.getMessage());
+            Log.e("INSIDE GET TOKEN", "Response: " + statuscode);
+
+            if (response.body() != null) {
+                // Get the image urls from the response body and store it in an array mThumbIds
+                //PHOTO_COUNT =1;
+                try {
+                    System.out.println("CHECK HERE" + response.body().string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.e("Error", "" + statuscode + "......" + "....null body");
+                Toast.makeText(getApplicationContext(), "token null", Toast.LENGTH_LONG).show();
             }
-        }*/
+        }
+            @Override
+            public void onFailure(Call<ResponseBody> call1,Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
     }
 }
 

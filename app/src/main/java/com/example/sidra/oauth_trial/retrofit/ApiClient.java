@@ -17,34 +17,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
     public static final String BASR_URL = "http://192.168.1.34:5000/";
-    //http://10.0.2.2:8000/
     //HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
     public static Retrofit retrofit = null;
 
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-    //retrofit.addInterceptor(logging);
-    /*public static Retrofit getClient(){
-        if (retrofit== null){
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(BASR_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
-
-
-        return retrofit;
-    }*/
-
-   /* private static Retrofit.Builder builder =
-            new Retrofit.Builder()
-                    .baseUrl(BASR_URL)
-                    .addConverterFactory(GsonConverterFactory.create());
-
-    public static <S> S createService(Class<S> serviceClass) {
-        Retrofit retrofit = builder.client(httpClient.build()).build();
-        return retrofit.create(serviceClass);
-    }*/
 
     private static Retrofit.Builder builder =
             new Retrofit.Builder()
@@ -52,6 +29,8 @@ public class ApiClient {
                     .addConverterFactory(GsonConverterFactory.create());
 
     public static <S> S createService(Class<S> serviceClass) {
+        //Retrofit retrofit = builder.client(httpClient.build()).build();
+        //return retrofit.create(serviceClass);
         return createService(serviceClass, null, null);
     }
 

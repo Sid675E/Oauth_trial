@@ -1,5 +1,6 @@
 package com.example.sidra.oauth_trial.retrofit;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -24,21 +25,21 @@ public interface ApiInterface {
     Call<Void> createUsers(@Path("username") String usrname,@Path("email_id") String emai_id);
 
     //@Header(Aut)
-    /*@GET("/token")
-    Call<Void> getJsonFromSid(@Headers("Authorization") String aksks);
+    @GET("/token")
+    Call<ResponseBody> getToken();
 
-    @GET("/users")
+    /*@GET("/users")
     void getUsers(
             @Header("Authorization") String auth
             //Callback<Void> callback
-    );*/
+    );
 
-    /*@POST("api/v1/customers")
-    //Call<UserAPIResponse> userUpdate(@Body UserUpdateRequest userUpdateRequest);*/
+    @POST("api/v1/customers")
+    Call<UserAPIResponse> userUpdate(@Body UserUpdateRequest userUpdateRequest);*//*
 
     public interface LoginService {
         @GET("/token")
         Call<Void> basicLogin();
-    }
+    }*/
 
 }
